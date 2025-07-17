@@ -30,7 +30,7 @@ model Post {
   title String
   content String
   thumbnail String @default("https://picsum.photos/id/237/200/300")
-  authorId Int 
+  authorId Int
   author User @relation(fields: [authorId], references: [id])
   status Status @default(DRAFT)
   publishedAt Boolean @default(false)

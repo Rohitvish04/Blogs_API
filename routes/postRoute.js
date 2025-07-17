@@ -1,10 +1,11 @@
-import {Router} from 'express';
-import { createPost, getPosts } from '../controllers/postController.js';
-import { protect } from '../middleware/authMiddleware.js';
+import { Router } from 'express';
+// import  { protect } from '../middleware/authMiddleware.js'
+import { createPost, getAllPosts, getSinglePost } from '../controllers/postController.js'
 
-const router = Router();
+const router = Router()
 
-router.post('/posts', protect, createPost);
-router.get('/posts', getPosts);
+router.post('/posts', createPost);
+router.get('/posts', getAllPosts);
+router.get('/posts/:id', getSinglePost);
 
-export default router
+export default router;
