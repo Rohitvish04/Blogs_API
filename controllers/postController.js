@@ -35,7 +35,8 @@ export const getAllPosts = async (req, res) => {
 
 export const getSinglePost = async (req, res) => {
     try {
-        const postId = Number(req.params.id);   
+        const postId = Number(req.params.id);  
+
         const post = await prisma.post.findUnique({
             where: {
                 id: postId
@@ -52,3 +53,41 @@ export const getSinglePost = async (req, res) => {
         res.status(500).json({ msg: "Server error", error: error.message });
     }
 };
+
+export const updatePost = async (req, res) => {
+    try {
+        const postId = Number(req.params.id);
+         const { title, content, thumbnail, status, publishedAt  } = req.body;
+        const post = await prisma.post.update({
+            where: {
+                id: postId,
+            },
+            data: {
+                title,
+                thumbnail,
+                content,
+                status,
+                publishedAt,
+            }
+        })
+        res.status(201).json(post)
+    } catch (error) {
+        console.error("update post error", error);
+        res.status(500).json({ msg: " server error", error: error.msg });
+    }
+}
+
+export const deletePost = async (req, res) => {
+    try {
+        const postId = Number(req.params.id)
+        const post = await prisma.post.delete({
+            where: {
+                id: postId,
+            }
+        });
+        res.status(201).json({ msg:"successfully Deleted!",post})
+    } catch (error) {
+        console.error('post deleting error', error);
+        res.status(500).json({ msg: "Server error", err: error.msg });
+    }
+}
