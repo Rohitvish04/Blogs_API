@@ -21,6 +21,7 @@ model User {
   password String
   role Role @default(USER)
   posts Post[]
+  comments Comment[]
   created_at DateTime @default(now())
   updated_at DateTime @default(now()) @updatedAt
 }
@@ -33,6 +34,7 @@ model Post {
   authorId Int
   author User @relation(fields: [authorId], references: [id])
   status Status @default(DRAFT)
+  comments Comment[]
   publishedAt Boolean @default(false)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -43,6 +45,17 @@ model Category {
   id Int @id @default(autoincrement())
   name String 
   posts Post[]
+}
+
+model Comment {
+  id Int @id @default(autoincrement())
+  content String
+  postId Int
+  authorId Int
+  post Post @relation(fields: [postId], references: [id])
+  author User @relation(fields: [authorId], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }
 
 enum Role {
