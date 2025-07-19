@@ -30,14 +30,14 @@ model Post {
   id Int @id @default(autoincrement())
   title String
   content String
-  thumbnail String @default("https://picsum.photos/id/237/200/300")
+  thumbnail String? @default("https://picsum.photos/id/237/200/300")
   authorId Int
   author User @relation(fields: [authorId], references: [id])
   status Status @default(DRAFT)
   comments Comment[]
-  publishedAt Boolean @default(false)
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  isPublished Boolean    @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   categories Category[]
 }
 
