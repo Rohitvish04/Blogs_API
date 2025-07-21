@@ -7,7 +7,7 @@ const router = Router()
 router.post('/posts',protect, createPost);
 router.get('/posts',protect, getAllPosts);
 router.get('/posts/:id',protect, getSinglePost);
-router.put('/posts/:id', updatePost);
-router.delete('/posts/:id', deletePost);
+router.put('/posts/:id',protect, updatePost);
+router.delete('/posts/:id',protect, deletePost);
 
 export default router;

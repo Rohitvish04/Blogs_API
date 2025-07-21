@@ -4,7 +4,7 @@ import { generateToken } from '../utils/generateToken.js';
 
 export const register = async (req, res) => {
     try {
-        const { name, email, password } = req.body;
+        const { name, email,role, password } = req.body;
 
         const existingUser = await prisma.user.findUnique({
             where: {
@@ -26,12 +26,13 @@ export const register = async (req, res) => {
             data: {
                 name,
                 email,
+                role,
                 password: hashPassword
             }
         });
         const token = generateToken(newUser);
 
-        res.status(201).json({ user: { id: newUser.id, name: newUser.name, email: newUser.email }, token });
+        res.status(201).json({ user: { id: newUser.id, name: newUser.name, email: newUser.email, role: newUser.role }, token });
     } catch (error) {
         console.error("Create user error:", error);
         res.status(500).json({ msg: "Server error", error: error.msg });
@@ -61,7 +62,7 @@ export const login = async (req, res) => {
 
 export const getProfile = async (req, res) => {
     const user = await prisma.user.findUnique({ where: { id: req.userId}});
-    res.json({ id: user.id, name: user.name, email: user.email})
+    res.json({ id: user.id, name: user.name, email: user.email, role: user.role })
 }
 
  
