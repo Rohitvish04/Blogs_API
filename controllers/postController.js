@@ -1,22 +1,9 @@
 import prisma from '../models/prismaClient.js'
 
 export const createPost = async (req, res) => {
-    const { title, content, thumbnail, categoryIds, status, authorId, publishedAt } = req.body;
+    const { title, content, thumbnail, status, authorId, publishedAt } = req.body;
 
     try {
-
-        if (!title || !content || !categoryIds || !Array.isArray(categoryIds)) {
-            return res.status(400).json({ msg: "Missing required fields" });
-        }
-
-        // ✅ Validate category IDs
-        const categories = await prisma.category.findMany({
-            where: { id: { in: categoryIds } }
-        });
-
-        if (categories.length !== categoryIds.length) {
-            return res.status(400).json({ error: "One or more category IDs are invalid." });
-        }
 
         const post = await prisma.post.create({
             data: {
@@ -24,14 +11,8 @@ export const createPost = async (req, res) => {
                 title,
                 content,
                 thumbnail,
-                categories: {
-                    connect: categoryIds.map((id) => ({ id })),
-                },
                 status,
                 publishedAt,
-            },
-            include: {
-                categories: true,
             },
         });
 
@@ -47,7 +28,7 @@ export const getAllPosts = async (req, res) => {
 
     try {
         const posts = await prisma.post.findMany({
-            include: { categories: true }
+            include: { comments: true }
         })
 
         res.status(201).json(posts)
@@ -65,7 +46,14 @@ export const getSinglePost = async (req, res) => {
             where: {
                 id: postId
             },
-            include: { categories: true }
+            include: {
+                comments: {
+                    select: {
+                        id: true,
+                        content: true,
+                    }
+                }
+            }
         });
 
         if (!post) {
@@ -82,7 +70,7 @@ export const getSinglePost = async (req, res) => {
 export const updatePost = async (req, res) => {
     try {
         const postId = Number(req.params.id);
-        const { title, content, thumbnail, categoryIds, status, publishedAt } = req.body;
+        const { title, content, thumbnail, status, publishedAt } = req.body;
         const post = await prisma.post.update({
             where: {
                 id: postId,
@@ -93,9 +81,6 @@ export const updatePost = async (req, res) => {
                 content,
                 status,
                 publishedAt,
-                categories: {
-                    set: categoryIds.map(id => ({ id })) // if categoryIds passed
-                }
             }
         })
 

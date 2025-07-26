@@ -1,7 +1,7 @@
 import express from "express"
 import userRoutes from "./routes/authRoute.js";
 import postRoutes from './routes/postRoute.js';
-import categoryRoutes from "./routes/categoryRoutes.js";
+import commentRoutes from "./routes/commentRoutes.js";
 import 'dotenv/config'
 
 
@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 3000
 
 app.use(express.json())
 app.use('/api/auth', userRoutes);
-app.use('/api', postRoutes, categoryRoutes);
+app.use('/api', postRoutes, commentRoutes);
  
  
 
