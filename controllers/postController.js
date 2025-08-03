@@ -1,18 +1,31 @@
-import prisma from '../models/prismaClient.js'
+import prisma from '../models/prismaClient.js';
+import cloudinary from "../utils/cloudinary.js";
+import fs from "fs";
+
 
 export const createPost = async (req, res) => {
-    const { title, content, thumbnail, status, authorId, publishedAt } = req.body;
+
+    const { title, content, status, authorId, isPublished } = req.body;
 
     try {
+
+        const result = await cloudinary.uploader.upload(req.file.path, {
+            folder: "blog-thumbnails",
+        });
+        if (!req.file) {
+            return res.status(400).json({ error: "No file uploaded" });
+        }
+
+        fs.unlinkSync(req.file.path);
 
         const post = await prisma.post.create({
             data: {
                 authorId: Number(authorId),
                 title,
                 content,
-                thumbnail,
+                thumbnail: result.secure_url,
                 status,
-                publishedAt,
+                isPublished: req.body.isPublished === 'true',
             },
         });
 
@@ -70,7 +83,7 @@ export const getSinglePost = async (req, res) => {
 export const updatePost = async (req, res) => {
     try {
         const postId = Number(req.params.id);
-        const { title, content, thumbnail, status, publishedAt } = req.body;
+        const { title, content, thumbnail, status, isPublished } = req.body;
         const post = await prisma.post.update({
             where: {
                 id: postId,
@@ -80,12 +93,12 @@ export const updatePost = async (req, res) => {
                 thumbnail,
                 content,
                 status,
-                publishedAt,
+                isPublished,
             }
         })
 
-        if(!post) return res.status(404).json({ message: 'post not found'});
-        if(post.authorId !== req.userId) return res.status(403).json({ message: 'Not user authorized'})
+        if (!post) return res.status(404).json({ message: 'post not found' });
+        if (post.authorId !== req.userId) return res.status(403).json({ message: 'Not user authorized' })
         res.status(201).json(post)
     } catch (error) {
         console.error("update post error", error);
