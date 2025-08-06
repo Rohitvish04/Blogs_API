@@ -53,8 +53,13 @@ export default {
           content: { type: "string" },
           postId: { type: "integer" },
           authorId: { type: "integer" },
+          parentId: { type: "integer", nullable: true },
           created_at: { type: "string", format: "date-time" },
-          updated_at: { type: "string", format: "date-time" }
+          updated_at: { type: "string", format: "date-time" },
+          replies: {
+            type: "array",
+            items: { $ref: "#/components/schemas/Comment" }
+          }
         }
       }
     }
@@ -288,7 +293,7 @@ export default {
       },
       post: {
         tags: ["Comments"],
-        summary: "Create comment (protected)",
+        summary: "Create comment or reply (protected)",
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
@@ -298,7 +303,8 @@ export default {
                 type: "object",
                 properties: {
                   content: { type: "string" },
-                  postId: { type: "integer" }
+                  postId: { type: "integer" },
+                  parentId: { type: "integer", nullable: true }
                 },
                 required: ["content", "postId"]
               }
@@ -338,6 +344,31 @@ export default {
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
         responses: {
           204: { description: "Comment deleted" },
+          401: { description: "Unauthorized" },
+          404: { description: "Not found" }
+        }
+      }
+    },
+    "/api/comments/post/{postId}/replies": {
+      get: {
+        tags: ["Comments"],
+        summary: "Get all top-level comments and their nested replies for a post",
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: "postId", in: "path", required: true, schema: { type: "integer" } }
+        ],
+        responses: {
+          200: {
+            description: "List of comments with nested replies",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "array",
+                  items: { $ref: "#/components/schemas/Comment" }
+                }
+              }
+            }
+          },
           401: { description: "Unauthorized" },
           404: { description: "Not found" }
         }

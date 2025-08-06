@@ -1,13 +1,14 @@
 import prisma from '../models/prismaClient.js'
 
 export const createComment = async (req, res) => {
-    const { content, postId, authorId } = req.body
+    const { content, postId, authorId, parentId } = req.body
     try {
         const comment = await prisma.comment.create({
             data: {
                  authorId: Number(authorId),
                  postId: Number(postId),
                  content,
+                 parentId: parentId ? Number(parentId) : null,
             },
         });
         res.status(201).json(comment);
@@ -58,5 +59,22 @@ export const deleteComment = async (req, res) => {
     } catch (err) {
         console.log("error deleted comment",err)
         res.status(500).json({ msg: "server error", error: err.msg });
+    }
+};
+
+export const getCommentsWithReplies = async (req, res) => {
+    try {
+        const postId = Number(req.params.postId);
+        const comments = await prisma.comment.findMany({
+            where: { postId, parentId: null },
+            include: {
+                replies: {
+                    include: { replies: true } // one level deep, can be recursive in JS if needed
+                }
+            }
+        });
+        res.status(200).json(comments);
+    } catch (err) {
+        res.status(500).json({ message: "server error", error: err.message });
     }
 };
