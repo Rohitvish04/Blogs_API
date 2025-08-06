@@ -1,3 +1,5 @@
+import { Status } from "@prisma/client";
+
 export default {
   openapi: "3.0.0",
   info: {
@@ -39,13 +41,13 @@ export default {
           updatedAt: { type: "string", format: "date-time" }
         }
       },
-    //   Category: {
-    //     type: "object",
-    //     properties: {
-    //       id: { type: "integer" },
-    //       name: { type: "string" }
-    //     }
-    //   },
+      //   Category: {
+      //     type: "object",
+      //     properties: {
+      //       id: { type: "integer" },
+      //       name: { type: "string" }
+      //     }
+      //   },
       Comment: {
         type: "object",
         properties: {
@@ -155,10 +157,12 @@ export default {
                 properties: {
                   title: { type: "string" },
                   content: { type: "string" },
+                  authorId: { type: "integer" },
+                  status: { type: "string", enum: ["DRAFT", "PUBLISHED", "ARCHIVED"] },
                   thumbnail: { type: "string" },
-                  categoryIds: { type: "array", items: { type: "integer" } }
+                  isPublished: { type: "boolean" }
                 },
-                required: ["title", "content"]
+                required: ["title", "content", "authorId", "status", "thumbnail", "isPublished"]
               }
             }
           }
@@ -194,7 +198,7 @@ export default {
                   title: { type: "string" },
                   content: { type: "string" },
                   thumbnail: { type: "string" },
-                  status: { type: "string", enum: ["DRAFT", "PUBLISHED", "ARCHIVED"] }
+                  status: { type: "string", enum: ["PUBLISHED", "DRAFT", "ARCHIVED"] }
                 }
               }
             }
