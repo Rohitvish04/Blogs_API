@@ -1,11 +1,12 @@
 import express from "express"
-const bodyParser = require('body-parser');
-const cors = require('cors');
+import  bodyParser from 'body-parser';
+import cors from 'cors';
 import userRoutes from "./routes/authRoute.js";
 import postRoutes from './routes/postRoute.js';
 import commentRoutes from "./routes/commentRoutes.js";
-const swaggerUi = require('swagger-ui-express');
-const swaggerDocument = require('./docs/swagger.yaml');
+import swaggerUi from 'swagger-ui-express';
+
+import swaggerDocument from './docs/swagger.js';
 import 'dotenv/config'
 
 
