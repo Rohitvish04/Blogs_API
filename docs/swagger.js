@@ -1,62 +1,60 @@
 export default {
   openapi: "3.0.0",
   info: {
-    title: "Blogs API",
+    title: "Blogs Application API",
     version: "1.0.0",
     description: "API documentation for the Blogs platform"
   },
   servers: [
-    {
-      url: "http://localhost:3000",
-      description: "Local server"
-    },
-    {
-      url: "https://blogs-api-ncn3.onrender.com",
-      description: "Production server"
-    }
+    { url: "http://localhost:3000", description: "Local server" },
+    { url: "https://blogs-api-ncn3.onrender.com", description: "Production server" }
   ],
   components: {
     securitySchemes: {
-      bearerAuth: {
-        type: "http",
-        scheme: "bearer",
-        bearerFormat: "JWT"
-      }
+      bearerAuth: { type: "http", scheme: "bearer", bearerFormat: "JWT" }
     },
     schemas: {
       User: {
         type: "object",
         properties: {
-          id: { type: "string" },
-          username: { type: "string" },
+          id: { type: "integer" },
+          name: { type: "string", nullable: true },
           email: { type: "string" },
-          role: { type: "string" }
+          role: { type: "string", enum: ["USER", "ADMIN"] },
+          created_at: { type: "string", format: "date-time" },
+          updated_at: { type: "string", format: "date-time" }
         }
       },
       Post: {
         type: "object",
         properties: {
-          id: { type: "string" },
+          id: { type: "integer" },
           title: { type: "string" },
           content: { type: "string" },
-          imageUrl: { type: "string" },
-          authorId: { type: "string" }
+          thumbnail: { type: "string", nullable: true },
+          authorId: { type: "integer" },
+          status: { type: "string", enum: ["DRAFT", "PUBLISHED", "ARCHIVED"] },
+          isPublished: { type: "boolean" },
+          createdAt: { type: "string", format: "date-time" },
+          updatedAt: { type: "string", format: "date-time" }
         }
       },
-      Category: {
-        type: "object",
-        properties: {
-          id: { type: "string" },
-          name: { type: "string" }
-        }
-      },
+    //   Category: {
+    //     type: "object",
+    //     properties: {
+    //       id: { type: "integer" },
+    //       name: { type: "string" }
+    //     }
+    //   },
       Comment: {
         type: "object",
         properties: {
-          id: { type: "string" },
+          id: { type: "integer" },
           content: { type: "string" },
-          postId: { type: "string" },
-          authorId: { type: "string" }
+          postId: { type: "integer" },
+          authorId: { type: "integer" },
+          created_at: { type: "string", format: "date-time" },
+          updated_at: { type: "string", format: "date-time" }
         }
       }
     }
@@ -74,11 +72,11 @@ export default {
               schema: {
                 type: "object",
                 properties: {
-                  username: { type: "string" },
+                  name: { type: "string" },
                   email: { type: "string" },
                   password: { type: "string" }
                 },
-                required: ["username", "email", "password"]
+                required: ["email", "password"]
               }
             }
           }
@@ -122,11 +120,7 @@ export default {
         responses: {
           200: {
             description: "User profile",
-            content: {
-              "application/json": {
-                schema: { $ref: "#/components/schemas/User" }
-              }
-            }
+            content: { "application/json": { schema: { $ref: "#/components/schemas/User" } } }
           },
           401: { description: "Unauthorized" }
         }
@@ -139,14 +133,7 @@ export default {
         responses: {
           200: {
             description: "List of posts",
-            content: {
-              "application/json": {
-                schema: {
-                  type: "array",
-                  items: { $ref: "#/components/schemas/Post" }
-                }
-              }
-            }
+            content: { "application/json": { schema: { type: "array", items: { $ref: "#/components/schemas/Post" } } } }
           }
         }
       },
@@ -163,7 +150,8 @@ export default {
                 properties: {
                   title: { type: "string" },
                   content: { type: "string" },
-                  imageUrl: { type: "string" }
+                  thumbnail: { type: "string" },
+                  categoryIds: { type: "array", items: { type: "integer" } }
                 },
                 required: ["title", "content"]
               }
@@ -180,23 +168,9 @@ export default {
       get: {
         tags: ["Posts"],
         summary: "Get single post",
-        parameters: [
-          {
-            name: "id",
-            in: "path",
-            required: true,
-            schema: { type: "string" }
-          }
-        ],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
         responses: {
-          200: {
-            description: "Post details",
-            content: {
-              "application/json": {
-                schema: { $ref: "#/components/schemas/Post" }
-              }
-            }
-          },
+          200: { description: "Post details", content: { "application/json": { schema: { $ref: "#/components/schemas/Post" } } } },
           404: { description: "Not found" }
         }
       },
@@ -204,14 +178,7 @@ export default {
         tags: ["Posts"],
         summary: "Update post",
         security: [{ bearerAuth: [] }],
-        parameters: [
-          {
-            name: "id",
-            in: "path",
-            required: true,
-            schema: { type: "string" }
-          }
-        ],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
         requestBody: {
           required: true,
           content: {
@@ -221,7 +188,8 @@ export default {
                 properties: {
                   title: { type: "string" },
                   content: { type: "string" },
-                  imageUrl: { type: "string" }
+                  thumbnail: { type: "string" },
+                  status: { type: "string", enum: ["DRAFT", "PUBLISHED", "ARCHIVED"] }
                 }
               }
             }
@@ -237,21 +205,143 @@ export default {
         tags: ["Posts"],
         summary: "Delete post",
         security: [{ bearerAuth: [] }],
-        parameters: [
-          {
-            name: "id",
-            in: "path",
-            required: true,
-            schema: { type: "string" }
-          }
-        ],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
         responses: {
           204: { description: "Post deleted" },
           401: { description: "Unauthorized" },
           404: { description: "Not found" }
         }
       }
+    },
+    // "/api/categories": {
+    //   get: {
+    //     tags: ["Categories"],
+    //     summary: "List all categories",
+    //     responses: {
+    //       200: {
+    //         description: "List of categories",
+    //         content: { "application/json": { schema: { type: "array", items: { $ref: "#/components/schemas/Category" } } } }
+    //       }
+    //     }
+    //   },
+    //   post: {
+    //     tags: ["Categories"],
+    //     summary: "Create category (admin only)",
+    //     security: [{ bearerAuth: [] }],
+    //     requestBody: {
+    //       required: true,
+    //       content: {
+    //         "application/json": {
+    //           schema: { type: "object", properties: { name: { type: "string" } }, required: ["name"] }
+    //         }
+    //       }
+    //     },
+    //     responses: {
+    //       201: { description: "Category created" },
+    //       401: { description: "Unauthorized" }
+    //     }
+    //   }
+    // },
+    // "/api/categories/{id}": {
+    //   put: {
+    //     tags: ["Categories"],
+    //     summary: "Update category (admin only)",
+    //     security: [{ bearerAuth: [] }],
+    //     parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
+    //     requestBody: {
+    //       required: true,
+    //       content: {
+    //         "application/json": {
+    //           schema: { type: "object", properties: { name: { type: "string" } } }
+    //         }
+    //       }
+    //     },
+    //     responses: {
+    //       200: { description: "Category updated" },
+    //       401: { description: "Unauthorized" },
+    //       404: { description: "Not found" }
+    //     }
+    //   },
+    //   delete: {
+    //     tags: ["Categories"],
+    //     summary: "Delete category (admin only)",
+    //     security: [{ bearerAuth: [] }],
+    //     parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
+    //     responses: {
+    //       204: { description: "Category deleted" },
+    //       401: { description: "Unauthorized" },
+    //       404: { description: "Not found" }
+    //     }
+    //   }
+    // },
+    "/api/comments": {
+      get: {
+        tags: ["Comments"],
+        summary: "List comments (protected)",
+        security: [{ bearerAuth: [] }],
+        responses: {
+          200: {
+            description: "List of comments",
+            content: { "application/json": { schema: { type: "array", items: { $ref: "#/components/schemas/Comment" } } } }
+          }
+        }
+      },
+      post: {
+        tags: ["Comments"],
+        summary: "Create comment (protected)",
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  content: { type: "string" },
+                  postId: { type: "integer" }
+                },
+                required: ["content", "postId"]
+              }
+            }
+          }
+        },
+        responses: {
+          201: { description: "Comment created" },
+          401: { description: "Unauthorized" }
+        }
+      }
+    },
+    "/api/comments/{id}": {
+      put: {
+        tags: ["Comments"],
+        summary: "Update comment (protected)",
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: { type: "object", properties: { content: { type: "string" } } }
+            }
+          }
+        },
+        responses: {
+          200: { description: "Comment updated" },
+          401: { description: "Unauthorized" },
+          404: { description: "Not found" }
+        }
+      },
+      delete: {
+        tags: ["Comments"],
+        summary: "Delete comment (protected)",
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
+        responses: {
+          204: { description: "Comment deleted" },
+          401: { description: "Unauthorized" },
+          404: { description: "Not found" }
+        }
+      }
     }
-    // Add similar definitions for categories and comments as needed
   }
 };
