@@ -6,7 +6,7 @@ export default {
     description: "API documentation for the Blogs platform"
   },
   servers: [
-    { url: "http://localhost:3000", description: "Local server" },
+    // { url: "http://localhost:3000", description: "Local server" },
     { url: "https://blogs-api-ncn3.onrender.com", description: "Production server" }
   ],
   components: {
