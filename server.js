@@ -16,9 +16,13 @@ const PORT = process.env.PORT || 3000
 // Middleware
 // Configure CORS
     const corsOptions = {
-      origin: 'http://localhost:5173', // Replace with your frontend origin
-      credentials: true, // Allow sending cookies/authorization headers
-    };
+    origin: 'http://localhost:5173', // Allow only requests from this origin
+    methods: 'GET,POST,PUT,DELETE', // Allow only these methods
+    allowedHeaders: ['Content-Type', 'Authorization'] // Allow only these headers
+};`
+
+// Use CORS middleware with specified options
+`app.use(cors(corsOptions));`
 
     app.use(cors(corsOptions));
 app.use(bodyParser.json());
