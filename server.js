@@ -19,7 +19,7 @@ const PORT = process.env.PORT || 3000
     origin: 'http://localhost:5173', // Allow only requests from this origin
     methods: 'GET,POST,PUT,DELETE', // Allow only these methods
     allowedHeaders: ['Content-Type', 'Authorization'], // Allow only these headers
-withCredentials: true,
+credentials: true,
 };
 
  app.use(cors(corsOptions));
