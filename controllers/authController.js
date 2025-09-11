@@ -66,3 +66,34 @@ export const getProfile = async (req, res) => {
 }
 
  
+export const updateProfile = async (req, res) => {
+    try {
+        const { name, gender, avatar } = req.body;
+        const userId = req.userId;
+
+        // Set a default avatar if not provided
+        const defaultAvatar = "https://images.unsplash.com/photo-1757573913927-0f6a58fb0f49?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
+
+        const updatedUser = await prisma.user.update({
+            where: { id: userId },
+            data: {
+                ...(name && { name }),
+                ...(gender && { gender }),
+                avatar: avatar || defaultAvatar
+            },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                gender: true,
+                avatar: true
+            }
+        });
+
+        res.json({ user: updatedUser });
+    } catch (error) {
+        console.error("Update profile error:", error);
+        res.status(500).json({ msg: "Server error", error: error.message });
+    }
+}
