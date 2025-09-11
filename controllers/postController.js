@@ -65,6 +65,11 @@ export const getSinglePost = async (req, res) => {
                         id: true,
                         content: true,
                     }
+                },
+                user: {
+                    select: {
+                        name: true,
+                    }
                 }
             }
         });
