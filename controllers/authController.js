@@ -1,6 +1,8 @@
 import bcrypt from 'bcryptjs';
 import prisma from "../models/prismaClient.js";
 import { generateToken } from '../utils/generateToken.js';
+import cloudinary from '../utils/cloudinary.js';
+
 
 export const register = async (req, res) => {
     try {
@@ -68,18 +70,32 @@ export const getProfile = async (req, res) => {
  
 export const updateProfile = async (req, res) => {
     try {
-        const { name, gender, avatar } = req.body;
+        const { name, gender } = req.body;
         const userId = req.userId;
+        let avatarUrl;
 
-        // Set a default avatar if not provided
-        const defaultAvatar = "https://images.unsplash.com/photo-1757573913927-0f6a58fb0f49?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
+        // If avatar is uploaded as a file (e.g., via multer middleware)
+        if (req.file) {
+            const result = await cloudinary.uploader.upload(req.file.path, {
+                folder: 'avatars',
+                width: 300,
+                crop: 'scale'
+            });
+            avatarUrl = result.secure_url;
+        } else if (req.body.avatar) {
+            // If avatar is a direct URL string
+            avatarUrl = req.body.avatar;
+        } else {
+            // Default avatar
+            avatarUrl = "https://images.unsplash.com/photo-1757573913927-0f6a58fb0f49?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
+        }
 
         const updatedUser = await prisma.user.update({
             where: { id: userId },
             data: {
                 ...(name && { name }),
                 ...(gender && { gender }),
-                avatar: avatar || defaultAvatar
+                avatar: avatarUrl
             },
             select: {
                 id: true,
