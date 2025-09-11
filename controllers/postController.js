@@ -55,6 +55,10 @@ export const getSinglePost = async (req, res) => {
     try {
         const postId = Number(req.params.id);
 
+        if(isNaN(postId)){
+            return res.status(400).json({ msg: "Invalid post Id"})
+        }
+
         const post = await prisma.post.findUnique({
             where: {
                 id: postId
@@ -66,7 +70,7 @@ export const getSinglePost = async (req, res) => {
                         content: true,
                     }
                 },
-                user: {
+                author: {
                     select: {
                         name: true,
                     }

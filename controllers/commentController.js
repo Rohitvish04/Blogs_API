@@ -10,7 +10,6 @@ export const createComment = async (req, res) => {
                  content,
                  parentId: parentId ? Number(parentId) : null,
             },
-            include: { author: { select: { name: true } } } // Include author's name
         });
         res.status(201).json(comment);
     } catch (err) {
