@@ -353,7 +353,7 @@ export default {
         }
       }
     },
-    "/api/comments/post/{postId}/replies": {
+    "/api/comments/posts/{postId}/replies": {
       get: {
         tags: ["Comments"],
         summary: "Get all top-level comments and their nested replies for a post",

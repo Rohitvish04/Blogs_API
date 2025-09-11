@@ -5,7 +5,7 @@ import fs from "fs";
 
 export const createPost = async (req, res) => {
 
-    const { title, content, status, authorId, isPublished } = req.body;
+    const { title, content, status, authorId,  } = req.body;
 
     try {
 
