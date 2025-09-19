@@ -14,16 +14,18 @@ const app = express()
 const PORT = process.env.PORT || 3000
 
 // Middleware
-// Configure CORS
-    const corsOptions = {
-    origin: 'http://localhost:5173', // Allow only requests from this origin
-    methods: 'GET,POST,PUT,DELETE', // Allow only these methods
-    allowedHeaders: ['Content-Type', 'Authorization'], // Allow only these headers
-credentials: true,
+const isProduction = process.env.NODE_ENV === 'production';
+
+const corsOptions = {
+  origin: isProduction
+    ? process.env.CLIENT_ORIGIN // e.g., https://yourdomain.com
+    : 'http://localhost:5173',
+  methods: 'GET,POST,PUT,DELETE',
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
 };
 
- app.use(cors(corsOptions));
-
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
