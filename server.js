@@ -16,11 +16,17 @@ const PORT = process.env.PORT || 3000
 // Middleware
 const isProduction = process.env.NODE_ENV === 'production';
 
+const allowedOrigins = process.env.CLIENT_ORIGIN?.split(",");
+
 const corsOptions = {
-  origin: isProduction
-    ? process.env.CLIENT_ORIGIN // e.g., https://yourdomain.com
-    : 'http://localhost:5173',
-  methods: 'GET,POST,PUT,DELETE',
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
 };
