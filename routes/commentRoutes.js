@@ -5,7 +5,7 @@ import { createComment, deleteComment, getcomment, getCommentsWithReplies, updat
 const router = Router();
 
 router.post('/comments',protect, createComment);
-router.get('/comments',protect, getcomment);
+router.get('/comments', getcomment);
 router.get('/comments/posts/:postId/replies', protect, getCommentsWithReplies);
 router.put('/comments/:id', protect, updateComment);
 router.delete('/comments/:id', protect, deleteComment);
