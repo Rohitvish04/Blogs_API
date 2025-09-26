@@ -174,29 +174,6 @@ export default {
       }
     },
     "/api/posts/{id}": {
-    },
-    "/api/posts/{postId}/comments/{commentId}": {
-      get: {
-        tags: ["Comments"],
-        summary: "Get a single comment for a specific post",
-        security: [{ bearerAuth: [] }],
-        parameters: [
-          { name: "postId", in: "path", required: true, schema: { type: "integer" } },
-          { name: "commentId", in: "path", required: true, schema: { type: "integer" } }
-        ],
-        responses: {
-          200: {
-            description: "Single comment for the post",
-            content: {
-              "application/json": {
-                schema: { $ref: "#/components/schemas/Comment" }
-              }
-            }
-          },
-          404: { description: "Comment not found for this post" },
-          401: { description: "Unauthorized" }
-        }
-      },
       get: {
         tags: ["Posts"],
         summary: "Get single post",
