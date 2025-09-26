@@ -29,21 +29,26 @@ export const getcomment = async (req, res) => {
 };
 
 export const updateComment = async (req, res) => {
-    try{
+    try {
         const commentId = Number(req.params.id);
-        const { content} = req.body
-        const comment = await prisma.comment.update({
-            where: {
-                id: commentId
-            },
-            data: {
-                content,
-            }
+        const { content } = req.body;
+        // Find the comment first
+        const comment = await prisma.comment.findUnique({
+            where: { id: commentId },
         });
-
-        
-        res.status(200).json({ msg: "comment updated successfully!",comment})
-    }catch (err){
+        if (!comment) {
+            return res.status(404).json({ message: "Comment not found" });
+        }
+        // Check ownership
+        if (comment.authorId !== req.user.id) {
+            return res.status(403).json({ message: "You are not authorized to update this comment" });
+        }
+        const updatedComment = await prisma.comment.update({
+            where: { id: commentId },
+            data: { content },
+        });
+        res.status(200).json({ msg: "comment updated successfully!", comment: updatedComment });
+    } catch (err) {
         res.status(500).json({ message: "server error", error: err.message });
     }
 };
@@ -51,16 +56,25 @@ export const updateComment = async (req, res) => {
 
 export const deleteComment = async (req, res) => {
     try {
-        const commentId = Number(req.params.id)
-        const comment = await prisma.comment.delete({
-            where: {
-                id: commentId,
-            }
-        })
-        res.status(201).json({msg: "deleted Succesully!", comment});
+        const commentId = Number(req.params.id);
+        // Find the comment first
+        const comment = await prisma.comment.findUnique({
+            where: { id: commentId },
+        });
+        if (!comment) {
+            return res.status(404).json({ message: "Comment not found" });
+        }
+        // Check ownership
+        if (comment.authorId !== req.user.id) {
+            return res.status(403).json({ message: "You are not authorized to delete this comment" });
+        }
+        const deletedComment = await prisma.comment.delete({
+            where: { id: commentId },
+        });
+        res.status(201).json({ msg: "deleted Succesully!", comment: deletedComment });
     } catch (err) {
-        console.log("error deleted comment",err)
-        res.status(500).json({ msg: "server error", error: err.msg });
+        console.log("error deleted comment", err);
+        res.status(500).json({ msg: "server error", error: err.message });
     }
 };
 
