@@ -39,7 +39,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use('/api/auth', userRoutes);
-app.use('/api', postRoutes, commentRoutes);
+app.use("/api", postRoutes);
+app.use("/api", commentRoutes);
  
  
 
