@@ -2,17 +2,18 @@ import prisma from '../models/prismaClient.js';
 
 //  Create Comment
 export const createComment = async (req, res) => {
-  const { content, postId, parentId } = req.body;
+  const { content, parentId } = req.body;   // only these two
+  const { postId } = req.params;            // get postId from URL
 
-  if (!content || !postId) {
-    return res.status(400).json({ message: "Content and postId are required" });
+  if (!content) {
+    return res.status(400).json({ message: "Content is required" });
   }
 
   try {
     const comment = await prisma.comment.create({
       data: {
         authorId: req.user.id,
-        postId: Number(postId),
+        postId: Number(postId),             // convert param to number
         content: content.trim(),
         parentId: parentId ? Number(parentId) : null,
       },
@@ -22,6 +23,7 @@ export const createComment = async (req, res) => {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
+
 
 //  Get All Comments for a Post
 export const getComments = async (req, res) => {
