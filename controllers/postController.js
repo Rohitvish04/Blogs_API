@@ -4,21 +4,23 @@ import fs from "fs";
 
 
 export const createPost = async (req, res) => {
-
-    const { title, content, status, authorId,  } = req.body;
+    const { title, content, status, authorId, isPublished } = req.body;
 
     try {
-
-        const result = await cloudinary.uploader.upload(req.file.path, {
-            folder: "blog-thumbnails",
-        });
+        // 1. Validate file first
         if (!req.file) {
             return res.status(400).json({ error: "No file uploaded" });
         }
 
-       // your logic
-  await fs.unlinkSync(req.file.path);
+        // 2. Upload to Cloudinary
+        const result = await cloudinary.uploader.upload(req.file.path, {
+            folder: "blog-thumbnails",
+        });
 
+        // 3. Remove local file (non-blocking)
+        await fs.promises.unlink(req.file.path);
+
+        // 4. Create post
         const post = await prisma.post.create({
             data: {
                 authorId: Number(authorId),
@@ -26,16 +28,20 @@ export const createPost = async (req, res) => {
                 content,
                 thumbnail: result.secure_url,
                 status,
-                isPublished: req.body.isPublished === 'true',
+                isPublished: isPublished === "true",
             },
         });
 
         res.status(201).json(post);
     } catch (error) {
         console.error("Create post error:", error);
-        res.status(500).json({ msg: "Server error", error: error.message });
+        res.status(500).json({
+            msg: "Server error",
+            error: error.message,
+        });
     }
 };
+
 
 
 export const getAllPosts = async (req, res) => {
