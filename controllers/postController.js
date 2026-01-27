@@ -16,7 +16,8 @@ export const createPost = async (req, res) => {
             return res.status(400).json({ error: "No file uploaded" });
         }
 
-        fs.unlinkSync(req.file.path);
+       // your logic
+  await fs.unlinkSync(req.file.path);
 
         const post = await prisma.post.create({
             data: {
