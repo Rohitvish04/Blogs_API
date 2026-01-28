@@ -139,17 +139,48 @@ export const updatePost = async (req, res) => {
     }
 }
 
-export const deletePost = async (req, res) => {
-    try {
-        const postId = Number(req.params.id)
-        const post = await prisma.post.delete({
-            where: {
-                id: postId,
-            }
-        });
-        res.status(201).json({ msg: "successfully Deleted!", post })
-    } catch (error) {
-        console.error('post deleting error', error);
-        res.status(500).json({ msg: "Server error", err: error.message });
+export const updatePost = async (req, res) => {
+  try {
+    const postId = Number(req.params.id);
+
+    if (isNaN(postId)) {
+      return res.status(400).json({ msg: "Invalid post id" });
     }
-}
+
+    const { title, content, thumbnail, status, isPublished } = req.body;
+
+    // 1️⃣ Find post first
+    const post = await prisma.post.findUnique({
+      where: { id: postId }
+    });
+
+    if (!post) {
+      return res.status(404).json({ msg: "Post not found" });
+    }
+
+    // 2️⃣ Authorization check
+    if (post.authorId !== req.userId) {
+      return res.status(403).json({ msg: "Not authorized" });
+    }
+
+    // 3️⃣ Update after checks
+    const updatedPost = await prisma.post.update({
+      where: { id: postId },
+      data: {
+        ...(title && { title }),
+        ...(content && { content }),
+        ...(thumbnail && { thumbnail }),
+        ...(status && { status: status.toUpperCase() }),
+        ...(isPublished !== undefined && {
+          isPublished: isPublished === true || isPublished === "true"
+        })
+      }
+    });
+
+    res.status(200).json(updatedPost);
+  } catch (error) {
+    console.error("update post error", error);
+    res.status(500).json({ msg: "Server error", error: error.message });
+  }
+};
+
