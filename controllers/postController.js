@@ -99,26 +99,43 @@ export const getSinglePost = async (req, res) => {
 export const updatePost = async (req, res) => {
     try {
         const postId = Number(req.params.id);
-        const { title, content, thumbnail, status, isPublished } = req.body;
-        const post = await prisma.post.update({
-            where: {
-                id: postId,
-            },
-            data: {
-                title,
-                thumbnail,
-                content,
-                status,
-                isPublished,
-            }
-        })
 
-        if (!post) return res.status(404).json({ message: 'post not found' });
-        if (post.authorId !== req.userId) return res.status(403).json({ message: 'Not user authorized' })
-        res.status(201).json(post)
+        if(isNaN(postId)) {
+            return res.status(400).json({ msg: "Invalid post Id" });
+        }
+        
+        const { title, content, thumbnail, status, isPublished } = req.body;
+        //1 find post first
+        const post = await prisma.post.findUnique({
+            where: { id: postId }
+        });
+
+        if(!post) {
+            return res.status(400).json({ msg: "Post not found" });
+        }
+        //2 Authorization check
+        if(post.authorId !== req.userId) {
+            return res.status(403).json({ msg: "Not authorized" });
+        }
+
+        //3 Update after Checks
+         const updatedPost = await prisma.post.update({
+      where: { id: postId },
+      data: {
+        ...(title && { title }),
+        ...(content && { content }),
+        ...(thumbnail && { thumbnail }),
+        ...(status && { status: status.toUpperCase() }),
+        ...(isPublished !== undefined && {
+          isPublished: isPublished === true || isPublished === "true"
+        })
+      }
+    });
+
+    res.status(200).json(updatedPost);
     } catch (error) {
         console.error("update post error", error);
-        res.status(500).json({ msg: " server error", error: error.message });
+        res.status(500).json({ msg: "Server error", error: error.message });
     }
 }
 
