@@ -72,8 +72,20 @@ export const updateProfile = async (req, res) => {
     try {
         const { name, gender } = req.body;
         const userId = req.userId;
+         
+
+        // Check user exists
+        const existingUser = await prisma.user.findUnique({
+            where: { id: userId }
+
+        if (!existingUser) {
+            return res.status(404).json({msg: "User not Found"});
+
         let avatarUrl;
 
+
+        // If avatar upload as file
+            
         // If avatar is uploaded as a file (e.g., via multer middleware)
         if (req.file) {
             const result = await cloudinary.uploader.upload(req.file.path, {
@@ -81,22 +93,31 @@ export const updateProfile = async (req, res) => {
                 width: 300,
                 crop: 'scale'
             });
+        
             avatarUrl = result.secure_url;
-        } else if (req.body.avatar) {
-            // If avatar is a direct URL string
-            avatarUrl = req.body.avatar;
-        } else {
-            // Default avatar
-            avatarUrl = "https://images.unsplash.com/photo-1757573913927-0f6a58fb0f49?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
         }
+            //IF avatar sent as URL
+            if(avatar && !req.file) {
+                avatarUrl = avatar;
+            }
+        // } else if (req.body.avatar) {
+        //     // If avatar is a direct URL string
+        //     avatarUrl = req.body.avatar;
+        // } else {
+        //     // Default avatar
+        //     avatarUrl = "https://images.unsplash.com/photo-1757573913927-0f6a58fb0f49?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
+        // }
 
-        const updatedUser = await prisma.user.update({
-            where: { id: userId },
-            data: {
+            //Build update object dynamically
+            const updateData = {
                 ...(name && { name }),
                 ...(gender && { gender }),
-                avatar: avatarUrl
-            },
+                ...(avatarUrl && { avatar: avatarUrl })
+            };
+            
+        const updatedUser = await prisma.user.update({
+            where: { id: userId },
+            data: updateData,
             select: {
                 id: true,
                 name: true,
