@@ -141,13 +141,30 @@ export const updatePost = async (req, res) => {
 
 export const deletePost = async (req, res) => {
     try {
-        const postId = Number(req.params.id)
-        const post = await prisma.post.delete({
-            where: {
-                id: postId,
-            }
+        const postId = Number(req.params.id);
+        // 1. Validate Id
+        if(isNaN(postId)) {
+            return res.status(400).json({ msg: "Invalid post Id"});
+        }
+
+        // 2. Find post
+        const post = await prisma.post.fiindUnique({
+            where: { id: postId }
         });
-        res.status(201).json({ msg: "successfully Deleted!", post })
+
+        if(!post) {
+            return res.status(400).json({ msg: "Post not found"});
+        }
+        // 3. Authoriation check
+        if (post.authorId !== req.userId){
+            return res.status(403).json({ msg: "Not authorized" });
+        }
+        //4. Delete Post
+        await prisma.post.delete({
+            where: { id: postId }
+        });
+        
+        res.status(200).json({ msg: "Post deleted successfully" })
     } catch (error) {
         console.error('post deleting error', error);
         res.status(500).json({ msg: "Server error", err: error.message });
