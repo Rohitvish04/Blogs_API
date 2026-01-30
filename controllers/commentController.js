@@ -67,11 +67,24 @@ export const getComments = async (req, res) => {
 //  Get Single Comment
 export const getSingleComment = async (req, res) => {
   try {
-    const { postId, commentId } = req.params;
+    const postId = Number(req.params.postId);
+    const commentId = Number(req.params.commentId);
+
+    if (isNaN(psotId) || isNaN(commentId)) {
+      return res.status(400).json({ message: "Invalid post or comment ID"});
+    }
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+    });
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+    
     const comment = await prisma.comment.findFirst({
       where: {
-        id: Number(commentId),
-        postId: Number(postId),
+        id: commentId,
+        postId,
       },
       include: { author: { select: { name: true } } },
     });
