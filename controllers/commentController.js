@@ -116,8 +116,12 @@ export const getSingleComment = async (req, res) => {
 export const updateComment = async (req, res) => {
   try {
     const commentId = Number(req.params.id);
-    const { content } = req.body;
 
+    if ( isNaN(commentId)) {
+      return res.status(400).json({ message: "Invalid comment Id" });
+    }
+    const { content } = req.body;
+ 
     if (!content || content.trim() === "") {
       return res.status(400).json({ message: "Content cannot be empty" });
     }
