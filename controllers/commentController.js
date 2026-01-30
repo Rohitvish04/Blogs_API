@@ -54,10 +54,24 @@ export const createComment = async (req, res) => {
 export const getComments = async (req, res) => {
   try {
     const postId = Number(req.params.postId);
+
+    if (isNaN(postId)) {
+      return res.status(400).json({ message: "Invalid post ID" });
+    }
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+    });
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+    
     const comments = await prisma.comment.findMany({
       where: { postId },
       include: { author: { select: { name: true } } },
+      orderBy: { createdAt: "asc" }, // nice for UI
     });
+    
     res.status(200).json(comments);
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
