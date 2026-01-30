@@ -1,47 +1,48 @@
 import prisma from '../models/prismaClient.js';
 
-//  Create Comment
+// Create Comment
 export const createComment = async (req, res) => {
-  const { content, parentId } = req.body;   // only these two
-  const { postId } = Number(req.params.postId);            // get postId from URL
+  const { content, parentId } = req.body;
+  const postId = Number(req.params.postId); // correct
 
-  if(isNaN(postId)) {
+  if (isNaN(postId)) {
     return res.status(400).json({ message: "Invalid post ID" });
   }
-  
+
   if (!content || content.trim() === "") {
     return res.status(400).json({ message: "Content is required" });
   }
 
   try {
-    //  Check post exits
-    const post = await prisma.post.findUnique({ 
-      where: { id: postId }
+    // Check post exists
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
     });
 
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
 
-    // Validate parent Comment if reply
-    if(parentId) {
+    // Validate parent comment if reply
+    if (parentId) {
       const parentComment = await prisma.comment.findUnique({
-        where: { id: Number(parentId) }
+        where: { id: Number(parentId) },
       });
 
-      if(!parentComment || parentComment.postId !== psotId) {
-        return res.status(400).json({ message: "Invalid parent comment" }
-                                    }
+      if (!parentComment || parentComment.postId !== postId) {
+        return res.status(400).json({ message: "Invalid parent comment" });
+      }
     }
-    
+
     const comment = await prisma.comment.create({
       data: {
         authorId: req.user.id,
-        postId,            // convert param to number
+        postId,
         content: content.trim(),
         parentId: parentId ? Number(parentId) : null,
       },
     });
+
     res.status(201).json(comment);
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
