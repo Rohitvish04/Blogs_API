@@ -36,7 +36,7 @@ export const createComment = async (req, res) => {
 
     const comment = await prisma.comment.create({
       data: {
-        authorId: req.user.id,
+        authorId: req.userId,
         postId,
         content: content.trim(),
         parentId: parentId ? Number(parentId) : null,
@@ -129,7 +129,7 @@ export const updateComment = async (req, res) => {
     const comment = await prisma.comment.findUnique({ where: { id: commentId } });
     if (!comment) return res.status(404).json({ message: "Comment not found" });
 
-    if (comment.authorId !== req.user.id) {
+    if (comment.authorId !== req.userId) {
       return res.status(403).json({ message: "You are not authorized to update this comment" });
     }
 
