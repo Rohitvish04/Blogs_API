@@ -12,6 +12,9 @@ export const createComment = async (req, res) => {
   if (!content || content.trim() === "") {
     return res.status(400).json({ message: "Content is required" });
   }
+   if (!req.userId) {
+    return res.status(401).json({ message: "Not authorized" });
+  }
 
   try {
     // Check post exists
